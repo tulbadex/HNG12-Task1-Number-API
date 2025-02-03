@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse
 import httpx
 
 app = FastAPI()
+
+# Enable CORS for all origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -52,12 +54,13 @@ async def get_fun_fact(n: int) -> str:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(f"http://numbersapi.com/{n}/math", timeout=3.0)
-            return response.text if response.status_code == 200 else "No fun fact available"
+            return response.text if response.status_code == 200 else "No fun fact available."
     except (httpx.RequestError, httpx.TimeoutException):
-        return "No fun fact available"
+        return "No fun fact available."
 
-@app.get("/api/classify-number", response_model=dict)
+@app.get("/api/classify-number", status_code=status.HTTP_200_OK)
 async def classify_number(number: str = Query(..., description="Number to classify")):
+    """Classify a number based on mathematical properties"""
     try:
         num = int(number)
     except ValueError:
@@ -66,26 +69,25 @@ async def classify_number(number: str = Query(..., description="Number to classi
             status_code=status.HTTP_400_BAD_REQUEST
         )
     
-    prime_status = is_prime(num)
+    # Determine properties
     perfect_status = is_perfect(num)
     armstrong_status = is_armstrong(num)
     parity = "even" if num % 2 == 0 else "odd"
-    
+
     properties = []
-    if prime_status:
-        properties.append("prime")
-    if perfect_status:
-        properties.append("perfect")
     if armstrong_status:
         properties.append("armstrong")
     properties.append(parity)
+
     fun_fact = await get_fun_fact(num)
 
-    return {
+    response = {
         "number": num,
-        "is_prime": bool(prime_status),
-        "is_perfect": bool(perfect_status),
+        "is_prime": is_prime(num),
+        "is_perfect": perfect_status,
         "properties": properties,
         "digit_sum": sum(int(d) for d in str(abs(num))),
         "fun_fact": fun_fact
     }
+
+    return JSONResponse(content=response, status_code=status.HTTP_200_OK)
