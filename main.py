@@ -2,7 +2,6 @@ from fastapi import FastAPI, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import httpx
-import json
 
 app = FastAPI()
 
@@ -51,8 +50,7 @@ async def get_fun_fact(n: int) -> str:
         async with httpx.AsyncClient() as client:
             response = await client.get(f"http://numbersapi.com/{n}/math", timeout=3.0)
             fact = response.text.strip() if response.status_code == 200 else f"{n} is a number"
-            # Ensure the fact is JSON serializable
-            return json.dumps(fact)[1:-1]
+            return fact
     except:
         return f"{n} is a number"
 
