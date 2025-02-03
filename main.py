@@ -46,21 +46,21 @@ def is_armstrong(n: int) -> bool:
     return sum(int(digit) ** length for digit in num_str) == n
 
 async def get_fun_fact(n: int) -> str:
+    """Fetch a fun fact about a number"""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(f"http://numbersapi.com/{n}/math", timeout=3.0)
-            fact = response.text.strip() if response.status_code == 200 else f"{n} is a number"
-            return fact
-    except:
-        return f"{n} is a number"
+            return response.text if response.status_code == 200 else "No fun fact available"
+    except (httpx.RequestError, httpx.TimeoutException):
+        return "No fun fact available"
 
-@app.get("/api/classify-number")
+@app.get("/api/classify-number", response_model=dict)
 async def classify_number(number: str = Query(..., description="Number to classify")):
     try:
         num = int(number)
     except ValueError:
         return JSONResponse(
-            content={"number": number, "error": True},
+            content={"number": number, "error": True, "message": "Invalid input. Please provide an integer."},
             status_code=status.HTTP_400_BAD_REQUEST
         )
     
