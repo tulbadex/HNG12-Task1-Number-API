@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 import httpx
 import math
 
@@ -13,6 +14,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class NumberResponse(BaseModel):
+    number: int
+    is_prime: bool
+    is_perfect: bool
+    properties: list[str]
+    digit_sum: int
+    fun_fact: str
 
 def is_armstrong(n: int) -> bool:
     str_n = str(n)
@@ -35,7 +44,7 @@ async def get_fun_fact(n: int) -> str:
     except:
         return f"{n} is a number"
 
-@app.get("/api/classify-number")
+@app.get("/api/classify-number", response_model=NumberResponse)
 async def classify_number(number: str):
     try:
         num = int(number)
@@ -50,11 +59,11 @@ async def classify_number(number: str):
     
     fun_fact = await get_fun_fact(num)
     
-    return {
-        "number": num,
-        "is_prime": is_prime(num),
-        "is_perfect": is_perfect(num),
-        "properties": properties,
-        "digit_sum": sum(int(d) for d in str(num)),
-        "fun_fact": fun_fact
-    }
+    return NumberResponse(
+        number=num,
+        is_prime=is_prime(num),
+        is_perfect=is_perfect(num),
+        properties=properties,
+        digit_sum=sum(int(d) for d in str(num)),
+        fun_fact=fun_fact
+    )
