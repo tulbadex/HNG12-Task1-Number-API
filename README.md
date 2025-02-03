@@ -44,7 +44,7 @@ GET /api/classify-number?number={integer}
 
 1. Clone this repository
 ```bash
-git clone https://github.com/tulbadex/HNG12-Number-API.git
+git clone https://github.com/tulbadex/HNG12-Task1-Number-API.git
 cd number-classification-api
 ```
 2. Install dependencies:
