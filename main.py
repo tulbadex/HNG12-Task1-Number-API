@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import requests
 import math
+import json
 
 app = FastAPI()
 
@@ -30,19 +32,22 @@ def is_perfect(n: int) -> bool:
 async def classify_number(number: str):
     try:
         num = int(number)
-    except ValueError:
-        return {"number": number, "error": True}
+    except (ValueError, TypeError):
+        return JSONResponse(
+            status_code=400,
+            content={"number": number, "error": True}
+        )
     
     properties = ["armstrong"] if is_armstrong(num) else []
     properties.append("odd" if num % 2 else "even")
     
     try:
-        response = requests.get(f"http://numbersapi.com/{num}/math")
-        fun_fact = response.text if response.status_code == 200 else f"{num} is a number"
+        response = requests.get(f"http://numbersapi.com/{num}/math", timeout=5)
+        fun_fact = response.text.strip() if response.status_code == 200 else f"{num} is a number"
     except:
         fun_fact = f"{num} is a number"
     
-    return {
+    response_data = {
         "number": num,
         "is_prime": is_prime(num),
         "is_perfect": is_perfect(num),
@@ -50,3 +55,13 @@ async def classify_number(number: str):
         "digit_sum": sum(int(d) for d in str(num)),
         "fun_fact": fun_fact
     }
+    
+    # Validate JSON before sending
+    try:
+        json.dumps(response_data)
+        return response_data
+    except:
+        return JSONResponse(
+            status_code=500,
+            content={"number": num, "error": True}
+        )
