@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 import httpx
 import math
+import json
 
 app = FastAPI()
 
@@ -14,14 +14,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-class NumberResponse(BaseModel):
-    number: int
-    is_prime: bool
-    is_perfect: bool
-    properties: list[str]
-    digit_sum: int
-    fun_fact: str
 
 def is_prime(n: int) -> bool:
     if n <= 1:
@@ -59,11 +51,13 @@ async def get_fun_fact(n: int) -> str:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(f"http://numbersapi.com/{n}/math", timeout=3.0)
-            return response.text.strip() if response.status_code == 200 else f"{n} is a number"
+            fact = response.text.strip() if response.status_code == 200 else f"{n} is a number"
+            # Ensure the fact is JSON serializable
+            return json.dumps(fact)[1:-1]
     except:
         return f"{n} is a number"
 
-@app.get("/api/classify-number", response_model=NumberResponse)
+@app.get("/api/classify-number")
 async def classify_number(number: str = Query(..., description="Number to classify")):
     try:
         num = int(number)
@@ -89,11 +83,11 @@ async def classify_number(number: str = Query(..., description="Number to classi
     
     fun_fact = await get_fun_fact(num)
     
-    return NumberResponse(
-        number=num,
-        is_prime=prime_status,
-        is_perfect=perfect_status,
-        properties=properties,
-        digit_sum=sum(int(d) for d in str(abs(num))),
-        fun_fact=fun_fact
-    )
+    return {
+        "number": num,
+        "is_prime": bool(prime_status),
+        "is_perfect": bool(perfect_status),
+        "properties": properties,
+        "digit_sum": sum(int(d) for d in str(abs(num))),
+        "fun_fact": fun_fact
+    }
