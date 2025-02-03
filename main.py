@@ -4,7 +4,6 @@ from fastapi.responses import JSONResponse
 import httpx
 
 app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,6 +13,7 @@ app.add_middleware(
 )
 
 def is_prime(n: int) -> bool:
+    """Check if a number is prime"""
     if n <= 1:
         return False
     if n <= 3:
@@ -28,6 +28,7 @@ def is_prime(n: int) -> bool:
     return True
 
 def is_perfect(n: int) -> bool:
+    """Check if a number is a perfect number"""
     if n <= 1:
         return False
     sum_divisors = 1
@@ -39,6 +40,7 @@ def is_perfect(n: int) -> bool:
     return sum_divisors == n
 
 def is_armstrong(n: int) -> bool:
+    """Check if a number is an Armstrong number"""
     if n < 0:
         return False
     num_str = str(n)
@@ -77,9 +79,8 @@ async def classify_number(number: str = Query(..., description="Number to classi
     if armstrong_status:
         properties.append("armstrong")
     properties.append(parity)
-    
     fun_fact = await get_fun_fact(num)
-    
+
     return {
         "number": num,
         "is_prime": bool(prime_status),
