@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import requests
@@ -49,8 +49,8 @@ async def classify_number(number: str):
     
     response_data = {
         "number": num,
-        "is_prime": is_prime(num),
-        "is_perfect": is_perfect(num),
+        "is_prime": bool(is_prime(num)),
+        "is_perfect": bool(is_perfect(num)),
         "properties": properties,
         "digit_sum": sum(int(d) for d in str(num)),
         "fun_fact": fun_fact
@@ -62,6 +62,6 @@ async def classify_number(number: str):
         return response_data
     except:
         return JSONResponse(
-            status_code=400,
-            content={"number": num, "error": True}
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"number": num, "error": True, "message": "Invalid input. Please provide an integer."}
         )
