@@ -62,6 +62,6 @@ async def classify_number(number: str):
         return response_data
     except:
         return JSONResponse(
-            status_code=500,
+            status_code=400,
             content={"number": num, "error": True}
         )
