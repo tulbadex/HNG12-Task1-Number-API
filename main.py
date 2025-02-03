@@ -2,7 +2,6 @@ from fastapi import FastAPI, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import httpx
-import math
 import json
 
 app = FastAPI()
