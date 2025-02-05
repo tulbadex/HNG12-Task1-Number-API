@@ -3,7 +3,10 @@
     "builds": [
         {
             "src": "main.py",
-            "use": "@vercel/python"
+            "use": "@vercel/python",
+            "headers": { 
+                "Content-Type": "application/json; charset=utf-8"
+            }
         }
     ],
     "routes": [
